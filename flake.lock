@@ -1,0 +1,38 @@
+{
+  "nodes": {
+    "ndi-linux": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1700246128,
+        "narHash": "sha256-38h+Rmb+juxfMHZXhdbRQzCUCUBxhsb1fKoEEPVtSJU=",
+        "type": "tarball",
+        "url": "https://downloads.ndi.tv/SDK/NDI_SDK_Linux/Install_NDI_SDK_v5_Linux.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://downloads.ndi.tv/SDK/NDI_SDK_Linux/Install_NDI_SDK_v5_Linux.tar.gz"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1703961334,
+        "narHash": "sha256-M1mV/Cq+pgjk0rt6VxoyyD+O8cOUiai8t9Q6Yyq4noY=",
+        "path": "/nix/store/lrmxkfadhlcrakza60w0mc8sc327a5qg-source",
+        "rev": "b0d36bd0a420ecee3bc916c91886caca87c894e9",
+        "type": "path"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
+    "root": {
+      "inputs": {
+        "ndi-linux": "ndi-linux",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
