@@ -1,5 +1,5 @@
 {
-  description = "A simple Go package";
+  description = "A video input (V4L2) to NDI converter";
 
   # Nixpkgs / NixOS version to use.
   # inputs.nixpkgs.url = "nixpkgs/nixos-21.11";
@@ -7,9 +7,12 @@
   inputs = {
     ndi-linux.url = "https://downloads.ndi.tv/SDK/NDI_SDK_Linux/Install_NDI_SDK_v5_Linux.tar.gz";
     ndi-linux.flake = false;
+
+    v4l2-to-ndi.url = "https://github.com/lplassman/V4L2-to-NDI";
+    v4l2-to-ndi.flake = false;
   };
 
-  outputs = { self, nixpkgs, ndi-linux }:
+  outputs = { self, nixpkgs, ndi-linux, v4l2-to-ndi }:
     let
 
       # to work with older version of flakes
@@ -40,37 +43,26 @@
           {
 
 
-            v4l2-to-ndi = pkgs.stdenv.mkDerivation
-              rec {
-                name = "v4l2-to-ndi";
-                version = "master";
+            v4l2-to-ndi =
 
+              let
+                my-ndi = pkgs.callPackage ./ndi.nix { };
+              in
 
-                #   nativeBuildInputs = [
-                #     pkgs.autoPatchelfHook
-                #   ];
+              pkgs.stdenv.mkDerivation
+                rec {
+                  name = "v4l2-to-ndi";
+                  version = "master";
 
-                src = [
-                 ./.
-                  # ndi-linux
-                ];
+                  nativeBuildInputs = [ pkgs.autoPatchelfHook ];
 
-                unpackPhase = ''
-                  echo y | ${ndi-linux}
-                  ls -l
-                  ndiSDK="NDI SDK for Linux";
-                '';
+                  src = ./.;
 
+                  unpackPhase = '' '';
 
+                  /*
+                  Original dependencies:
 
-                # sudo bash ./preinstall.sh
-
-                /*
-                  #!/usr/bin/env sh
-
-                  apt-get update
-
-                  #install prerequisites
                   apt-get -y install \
                   g++ \
                   avahi-daemon \
@@ -78,89 +70,51 @@
                   avahi-utils \
                   libssl-dev \
                   libconfig++-dev \
-                  curl \
-                  || exit 1
-                */
-
-
-                buildInputs = with pkgs; [
-                  # alsaLib
-                  # openssl
-                  # zlib
-                  openssl
                   curl
-                  avahi
-                  # pulseaudio
-                ];
+                  */
 
-                # sudo bash ./download_NDI_SDK.sh
+                  buildInputs = with pkgs; [
+                    openssl
+                    curl
+                    avahi
+                    my-ndi
+                  ];
 
-                /*
-
-
-                  #download and extract NDI
+                  /*
+                  # Original pre-install script:
                   curl -s https://downloads.ndi.tv/SDK/NDI_SDK_Linux/Install_NDI_SDK_v5_Linux.tar.gz | tar xvz -C /tmp/
                   yes y | bash /tmp/Install_NDI_SDK_v5_Linux.sh > /dev/null
+                  */
 
-                */
-
-
-                # sudo bash ./build_x86_64.sh
-
-                /*
-                  #!/usr/bin/env sh
-
-                  if [ ! -d "build" ]; then
-                  mkdir build
-                  fi
-
-                  if [ ! -d "lib" ]; then
-                  mkdir lib
-                  fi
-
-                  cp "NDI SDK for Linux"/include/* include/
-                  cp "NDI SDK for Linux"/lib/x86_64-linux-gnu/* lib/
-
-                  g++ -std=c++14 -pthread  -Wl,--allow-shlib-undefined -Wl,--as-needed -Iinclude/ -L lib -o build/v4l2ndi main.cpp PixelFormatConverter.cpp -lndi -ldl
-
-                */
-
-                buildPhase = ''
-
-                echo "SRC is $src"
-
-                  # mkdir build
-                  # mkdir lib
-
-                  echo "SDK IS IN "
-
-# ls 'NDI SDK for Linux'
+                  buildPhase = ''
 
 
+                ls $src
 
+                  # Original build script:
                   # cp "NDI SDK for Linux"/include/* $src/include/
-
                   # cp "NDI SDK for Linux"/lib/x86_64-linux-gnu/* lib/
-
                   # g++ -std=c++14 -pthread  -Wl,--allow-shlib-undefined -Wl,--as-needed -Iinclude/ -L lib -o build/v4l2ndi main.cpp PixelFormatConverter.cpp -lndi -ldl
 
-                  cd $src
 
+                  echo y | ${ndi-linux}
+                  mkdir build
 
                   g++ -std=c++14 -pthread  -Wl,--allow-shlib-undefined -Wl,--as-needed \
-                  -I'NDI SDK for Linux'/incude/ \
+                  -I'NDI SDK for Linux'/include/ \
                   -Iinclude/ \
-                  -L 'NDI SDK for Linux'/lib/x86_64-linux-gnu \
+                  -L'NDI SDK for Linux'/lib/x86_64-linux-gnu \
                   -o build/v4l2ndi main.cpp PixelFormatConverter.cpp -lndi -ldl
+
+                  mkdir $out
+                  cp -r build $out/bin
 
                 '';
 
 
-                # sudo bash ./install.sh
+                  /*
 
-
-                /*
-
+                  Original Install script:
 
                   #!/usr/bin/env sh
 
@@ -191,108 +145,21 @@
 
                   #symlink to the /usr/bin directory
                   ln -s "$BIN_DIR/v4l2ndi" /usr/bin/
-                */
+                  */
 
 
+                  #   sourceRoot = ".";
+
+                  #   installPhase = ''
 
 
+                  #   # meta = with pkgs.lib; {
+                  #   #   homepage = "https://studio-link.com";
+                  #   #   description = "Voip transfer";
+                  #   #   platforms = platforms.linux;
+                  #   # };
 
-
-
-
-
-
-
-
-
-
-                #   sourceRoot = ".";
-
-                #   installPhase = ''
-
-
-                #   # meta = with pkgs.lib; {
-                #   #   homepage = "https://studio-link.com";
-                #   #   description = "Voip transfer";
-                #   #   platforms = platforms.linux;
-                #   # };
-
-              };
-
-
-
-
-            # ndi-utils = pkgs.stdenv.mkDerivation rec {
-            #   pname = "ndi";
-
-            #   version = "21.07.0";
-
-            #   src = ./.;
-
-            #   nativeBuildInputs = [
-            #     pkgs.autoPatchelfHook
-            #   ];
-
-            #   buildInputs = with pkgs; [
-            #     # alsaLib
-            #     # openssl
-            #     # zlib
-            #     avahi
-            #     # pulseaudio
-            #   ];
-
-            #   sourceRoot = ".";
-
-            #   installPhase = ''
-
-
-
-
-            #                  install -m755 -D $src/bin/x86_64-linux-gnu/ndi-record $out/bin/ndi-record
-            #                  install -m755 -D $src/bin/x86_64-linux-gnu/ndi-directory-service $out/bin/ndi-directory-service
-            #                  install -m755 -D $src/bin/x86_64-linux-gnu/ndi-free-audio $out/bin/ndi-free-audio
-            #                  install -m755 -D $src/bin/x86_64-linux-gnu/ndi-benchmark $out/bin/ndi-benchmark
-
-            #     # echo "LIBS"
-
-
-            #     #   cp -r $src/lib/x86_64-linux-gnu $out/lib
-
-
-            #     # echo "patching bins"
-
-            #     #   for i in $out/bin/*; do
-            #     #     patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" "$i"
-            #     #   done
-
-
-            #     # echo "patching ndi-record"
-            #     #   patchelf --set-rpath "${pkgs.avahi}/lib:${pkgs.stdenv.cc.libc}/lib" $out/bin/ndi-record
-
-
-            #     # echo "patching lib"
-
-
-
-
-            #     #   echo "copy example"
-
-            #     #   mv $src/include examples $out/
-            #     #   mkdir -p $out/share/doc/${pname}-${version}
-            #     #   mv licenses $out/share/doc/${pname}-${version}/licenses
-            #     #   mv logos $out/share/doc/${pname}-${version}/logos
-            #     #   mv documentation/* $out/share/doc/${pname}-${version}/
-
-
-
-            #   '';
-
-            #   # meta = with pkgs.lib; {
-            #   #   homepage = "https://studio-link.com";
-            #   #   description = "Voip transfer";
-            #   #   platforms = platforms.linux;
-            #   # };
-            # };
+                };
           });
 
 

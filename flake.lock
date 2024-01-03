@@ -29,7 +29,20 @@
     "root": {
       "inputs": {
         "ndi-linux": "ndi-linux",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "v4l2-to-ndi": "v4l2-to-ndi"
+      }
+    },
+    "v4l2-to-ndi": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-g7vOilE6W0gJK7UXhwgS5tC5OVbgD2oean5IQAb1iNg=",
+        "type": "file",
+        "url": "https://github.com/lplassman/V4L2-to-NDI"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://github.com/lplassman/V4L2-to-NDI"
       }
     }
   },
