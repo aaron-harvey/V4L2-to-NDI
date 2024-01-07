@@ -153,11 +153,10 @@
                   #   installPhase = ''
 
 
-                  #   # meta = with pkgs.lib; {
-                  #   #   homepage = "https://studio-link.com";
-                  #   #   description = "Voip transfer";
-                  #   #   platforms = platforms.linux;
-                  #   # };
+                  meta = with pkgs.lib; {
+                    mainProgram = "v4l2ndi";
+                    platforms = platforms.linux;
+                  };
 
                 };
           });
