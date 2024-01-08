@@ -42,7 +42,6 @@
 
           {
 
-
             v4l2-to-ndi =
 
               let
@@ -60,31 +59,12 @@
 
                   unpackPhase = '' '';
 
-                  /*
-                  Original dependencies:
-
-                  apt-get -y install \
-                  g++ \
-                  avahi-daemon \
-                  avahi-discover \
-                  avahi-utils \
-                  libssl-dev \
-                  libconfig++-dev \
-                  curl
-                  */
-
                   buildInputs = with pkgs; [
                     openssl
                     curl
                     avahi
                     my-ndi
                   ];
-
-                  /*
-                  # Original pre-install script:
-                  curl -s https://downloads.ndi.tv/SDK/NDI_SDK_Linux/Install_NDI_SDK_v5_Linux.tar.gz | tar xvz -C /tmp/
-                  yes y | bash /tmp/Install_NDI_SDK_v5_Linux.sh > /dev/null
-                  */
 
                   buildPhase = ''
 
@@ -106,58 +86,17 @@
                   -L'NDI SDK for Linux'/lib/x86_64-linux-gnu \
                   -o build/v4l2ndi main.cpp PixelFormatConverter.cpp -lndi -ldl
 
-                  mkdir $out
-                  cp -r build $out/bin
-
                 '';
 
+                  installPhase = ''
+                    mkdir $out
+                    cp -r build $out/bin
+                  '';
 
-                  /*
-
-                  Original Install script:
-
-                  #!/usr/bin/env sh
-
-                  INSTALL_DIR="/opt/v4l2ndi"
-                  BIN_DIR="$INSTALL_DIR/bin"
-                  LIB_DIR="/usr/lib"
-
-                  rm -R "$INSTALL_DIR"
-                  rm -R "$LIB_DIR/libndi*"
-
-                  if [ ! -d "$INSTALL_DIR" ]; then
-                  mkdir "$INSTALL_DIR"
-                  fi
-
-                  if [ ! -d "$LIB_DIR" ]; then
-                  mkdir "$LIB_DIR"
-                  fi
-
-                  if [ ! -d "$BIN_DIR" ]; then
-                  mkdir "$BIN_DIR"
-                  fi
-
-                  cp lib/* "$LIB_DIR"
-
-                  cp build/v4l2ndi "$BIN_DIR"
-
-                  chmod +x "$BIN_DIR/v4l2ndi"
-
-                  #symlink to the /usr/bin directory
-                  ln -s "$BIN_DIR/v4l2ndi" /usr/bin/
-                  */
-
-
-                  #   sourceRoot = ".";
-
-                  #   installPhase = ''
-
-
-                  #   # meta = with pkgs.lib; {
-                  #   #   homepage = "https://studio-link.com";
-                  #   #   description = "Voip transfer";
-                  #   #   platforms = platforms.linux;
-                  #   # };
+                  meta = with pkgs.lib; {
+                    mainProgram = "v4l2ndi";
+                    platforms = platforms.linux;
+                  };
 
                 };
           });
