@@ -39,19 +39,42 @@
       # A Nixpkgs overlay.
       overlay = final: prev: {
 
-        ndi = final.callPackage ./ndi.nix { inherit ndi-linux; };
+        ndi = prev.ndi.overrideAttrs (old: {
+          src = ndi-linux;
+          unpackPhase = ''
+            echo y | $src;
+            sourceRoot="NDI SDK for Linux";
+          '';
 
-        # TODO Currently ndi is broken/outdated in nixpkgs. Use this overlay
-        # when https://github.com/NixOS/nixpkgs/pull/272073 is merged and
-        # remove ./ndi.nix
+          # TODO Currently ndi is broken/outdated in nixpkgs. Use this overlay
+          # Remove this installPhase when
+          # https://github.com/NixOS/nixpkgs/pull/272073 is merged
+          installPhase = with prev;
+            let
+              ndiPlatform = "x86_64-linux-gnu";
+              pname = "ndi";
+              version = "5.6.0";
+            in
 
-        # ndi = prev.ndi.overrideAttrs (old: {
-        #   src = ndi-linux;
-        #   unpackPhase = ''
-        #     echo y | $src;
-        #     sourceRoot="NDI SDK for Linux";
-        #   '';
-        # });
+            ''
+              mkdir $out
+              mv bin/${ndiPlatform} $out/bin
+              for i in $out/bin/*; do
+                if [ -L "$i" ]; then continue; fi
+                patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" "$i"
+              done
+              patchelf --set-rpath "${avahi}/lib:${stdenv.cc.libc}/lib" $out/bin/ndi-record
+              mv lib/${ndiPlatform} $out/lib
+              for i in $out/lib/*; do
+                if [ -L "$i" ]; then continue; fi
+                patchelf --set-rpath "${avahi}/lib:${stdenv.cc.libc}/lib" "$i"
+              done
+              mv include examples $out/
+              mkdir -p $out/share/doc/${pname}-${version}
+              mv licenses $out/share/doc/${pname}-${version}/licenses
+              mv documentation/* $out/share/doc/${pname}-${version}/
+            '';
+        });
       };
 
       # Provide some binary packages for selected system types.
