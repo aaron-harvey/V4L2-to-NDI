@@ -7,12 +7,9 @@
   inputs = {
     ndi-linux.url = "https://downloads.ndi.tv/SDK/NDI_SDK_Linux/Install_NDI_SDK_v5_Linux.tar.gz";
     ndi-linux.flake = false;
-
-    v4l2-to-ndi.url = "https://github.com/lplassman/V4L2-to-NDI";
-    v4l2-to-ndi.flake = false;
   };
 
-  outputs = { self, nixpkgs, ndi-linux, v4l2-to-ndi }:
+  outputs = { self, nixpkgs, ndi-linux }:
     let
 
       # to work with older version of flakes
@@ -40,13 +37,16 @@
       overlay = final: prev: {
 
         ndi = prev.ndi.overrideAttrs (old: {
+
+          # Override unfree src with flake input and adapt unpackPhase
+          # accordingly
           src = ndi-linux;
           unpackPhase = ''
             echo y | $src;
             sourceRoot="NDI SDK for Linux";
           '';
 
-          # TODO Currently ndi is broken/outdated in nixpkgs. Use this overlay
+          # TODO Currently ndi is broken/outdated in nixpkgs.
           # Remove this installPhase when
           # https://github.com/NixOS/nixpkgs/pull/272073 is merged
           installPhase = with prev;
@@ -85,7 +85,7 @@
 
             v4l2-to-ndi = pkgs.stdenv.mkDerivation rec {
               name = "v4l2-to-ndi";
-              version = "master";
+              inherit version;
 
               nativeBuildInputs = [ pkgs.autoPatchelfHook ];
 
@@ -119,8 +119,7 @@
                 platforms = platforms.linux;
                 homepage = "https://github.com/lplassman/V4L2-to-NDI";
                 description = "A video input (V4L2) to NDI converter";
-                maintainers = with pkgs; [ pinpox mayniklas ];
-                # sourceProvenance = with sourceTypes; [ binaryNativeCode ];
+                maintainers = with pkgs; [ pinpox MayNiklas ];
                 license = licenses.mit;
               };
 
