@@ -1,4 +1,4 @@
-{ lib, stdenv, pkgs, avahi, obs-studio-plugins }:
+{ lib, stdenv, pkgs, avahi, obs-studio-plugins, ndi-linux }:
 
 let
   ndiPlatform = "x86_64-linux-gnu";
@@ -11,17 +11,19 @@ stdenv.mkDerivation rec {
   majorVersion = builtins.head (builtins.splitVersion version);
   installerName = "Install_NDI_SDK_v${majorVersion}_Linux";
 
-  src = pkgs.fetchurl {
-    url = "https://downloads.ndi.tv/SDK/NDI_SDK_Linux/Install_NDI_SDK_v5_Linux.tar.gz";
-    # hash = "sha256-T/S5LyxfQtI0qn0ULi3n6bBFxytGrVFJpFnUjv2SGN4=";
-    hash = "sha256:4ff4b92f2c5f42d234aa7d142e2de7e9b045c72b46ad5149a459d48efd9218de";
-  };
+  src = ndi-linux;
+
+  # src = pkgs.fetchurl {
+  #   url = "https://downloads.ndi.tv/SDK/NDI_SDK_Linux/Install_NDI_SDK_v5_Linux.tar.gz";
+  #   # hash = "sha256-T/S5LyxfQtI0qn0ULi3n6bBFxytGrVFJpFnUjv2SGN4=";
+  #   hash = "sha256:4ff4b92f2c5f42d234aa7d142e2de7e9b045c72b46ad5149a459d48efd9218de";
+  # };
 
   buildInputs = [ avahi ];
 
   unpackPhase = ''
-    unpackFile $src
-    echo y | ./${installerName}.sh
+    # unpackFile $src
+    echo y | $src;
     sourceRoot="NDI SDK for Linux";
   '';
 

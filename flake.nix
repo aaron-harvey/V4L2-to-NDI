@@ -38,7 +38,20 @@
 
       # A Nixpkgs overlay.
       overlay = final: prev: {
-        ndi = final.callPackage ./ndi.nix { };
+
+        ndi = final.callPackage ./ndi.nix { inherit ndi-linux; };
+
+        # TODO Currently ndi is broken/outdated in nixpkgs. Use this overlay
+        # when https://github.com/NixOS/nixpkgs/pull/272073 is merged and
+        # remove ./ndi.nix
+
+        # ndi = prev.ndi.overrideAttrs (old: {
+        #   src = ndi-linux;
+        #   unpackPhase = ''
+        #     echo y | $src;
+        #     sourceRoot="NDI SDK for Linux";
+        #   '';
+        # });
       };
 
       # Provide some binary packages for selected system types.
@@ -63,15 +76,15 @@
               ];
 
               buildPhase = ''
-                  mkdir build
+                mkdir build
 
-                  g++ -std=c++14 -pthread  -Wl,--allow-shlib-undefined -Wl,--as-needed \
-                  -I'NDI SDK for Linux'/include/ \
-                  -Iinclude/ \
-                  -L'NDI SDK for Linux'/lib/x86_64-linux-gnu \
-                  -o build/v4l2ndi main.cpp PixelFormatConverter.cpp -lndi -ldl
+                g++ -std=c++14 -pthread  -Wl,--allow-shlib-undefined -Wl,--as-needed \
+                -I'NDI SDK for Linux'/include/ \
+                -Iinclude/ \
+                -L'NDI SDK for Linux'/lib/x86_64-linux-gnu \
+                -o build/v4l2ndi main.cpp PixelFormatConverter.cpp -lndi -ldl
 
-                '';
+              '';
 
               installPhase = ''
                 mkdir $out
