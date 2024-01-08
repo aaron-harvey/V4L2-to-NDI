@@ -28,43 +28,41 @@
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
 
       # Nixpkgs instantiated for supported system types.
-      nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
+      nixpkgsFor = forAllSystems (system: import nixpkgs {
+        inherit system;
+        overlays = [ self.overlay ];
+      });
 
     in
     {
 
+      # A Nixpkgs overlay.
+      overlay = final: prev: {
+        ndi = final.callPackage ./ndi.nix { };
+      };
+
       # Provide some binary packages for selected system types.
       packages = forAllSystems
         (system:
-          let
-            pkgs = nixpkgsFor.${system};
-          in
-
+          let pkgs = nixpkgsFor.${system}; in
           {
 
-            v4l2-to-ndi =
+            v4l2-to-ndi = pkgs.stdenv.mkDerivation rec {
+              name = "v4l2-to-ndi";
+              version = "master";
 
-              let
-                my-ndi = pkgs.callPackage ./ndi.nix { };
-              in
+              nativeBuildInputs = [ pkgs.autoPatchelfHook ];
 
-              pkgs.stdenv.mkDerivation rec {
-                name = "v4l2-to-ndi";
-                version = "master";
+              src = ./.;
 
-                nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+              buildInputs = with pkgs; [
+                openssl
+                curl
+                avahi
+                ndi
+              ];
 
-                src = ./.;
-
-                buildInputs = with pkgs; [
-                  openssl
-                  curl
-                  avahi
-                  my-ndi
-                ];
-
-                buildPhase = ''
-
+              buildPhase = ''
                   mkdir build
 
                   g++ -std=c++14 -pthread  -Wl,--allow-shlib-undefined -Wl,--as-needed \
@@ -75,22 +73,22 @@
 
                 '';
 
-                installPhase = ''
-                  mkdir $out
-                  cp -r build $out/bin
-                '';
+              installPhase = ''
+                mkdir $out
+                cp -r build $out/bin
+              '';
 
-                meta = with pkgs.lib; {
-                  mainProgram = "v4l2ndi";
-                  platforms = platforms.linux;
-                  homepage = "https://github.com/lplassman/V4L2-to-NDI";
-                  description = "A video input (V4L2) to NDI converter";
-                  maintainers = with pkgs; [ pinpox mayniklas ];
-                  # sourceProvenance = with sourceTypes; [ binaryNativeCode ];
-                  license = licenses.mit;
-                };
-
+              meta = with pkgs.lib; {
+                mainProgram = "v4l2ndi";
+                platforms = platforms.linux;
+                homepage = "https://github.com/lplassman/V4L2-to-NDI";
+                description = "A video input (V4L2) to NDI converter";
+                maintainers = with pkgs; [ pinpox mayniklas ];
+                # sourceProvenance = with sourceTypes; [ binaryNativeCode ];
+                license = licenses.mit;
               };
+
+            };
           });
 
 
