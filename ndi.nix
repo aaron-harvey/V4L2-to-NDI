@@ -8,21 +8,14 @@ stdenv.mkDerivation rec {
   pname = "ndi";
   version = "5.6.0";
 
-
-
-
   majorVersion = builtins.head (builtins.splitVersion version);
   installerName = "Install_NDI_SDK_v${majorVersion}_Linux";
-
 
   src = pkgs.fetchurl {
     url = "https://downloads.ndi.tv/SDK/NDI_SDK_Linux/Install_NDI_SDK_v5_Linux.tar.gz";
     # hash = "sha256-T/S5LyxfQtI0qn0ULi3n6bBFxytGrVFJpFnUjv2SGN4=";
     hash = "sha256:4ff4b92f2c5f42d234aa7d142e2de7e9b045c72b46ad5149a459d48efd9218de";
-
-
   };
-
 
   buildInputs = [ avahi ];
 
@@ -31,9 +24,6 @@ stdenv.mkDerivation rec {
     echo y | ./${installerName}.sh
     sourceRoot="NDI SDK for Linux";
   '';
-
-
-
 
   installPhase = ''
     mkdir $out

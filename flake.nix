@@ -48,36 +48,23 @@
                 my-ndi = pkgs.callPackage ./ndi.nix { };
               in
 
-              pkgs.stdenv.mkDerivation
-                rec {
-                  name = "v4l2-to-ndi";
-                  version = "master";
+              pkgs.stdenv.mkDerivation rec {
+                name = "v4l2-to-ndi";
+                version = "master";
 
-                  nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+                nativeBuildInputs = [ pkgs.autoPatchelfHook ];
 
-                  src = ./.;
+                src = ./.;
 
-                  unpackPhase = '' '';
+                buildInputs = with pkgs; [
+                  openssl
+                  curl
+                  avahi
+                  my-ndi
+                ];
 
-                  buildInputs = with pkgs; [
-                    openssl
-                    curl
-                    avahi
-                    my-ndi
-                  ];
+                buildPhase = ''
 
-                  buildPhase = ''
-
-
-                ls $src
-
-                  # Original build script:
-                  # cp "NDI SDK for Linux"/include/* $src/include/
-                  # cp "NDI SDK for Linux"/lib/x86_64-linux-gnu/* lib/
-                  # g++ -std=c++14 -pthread  -Wl,--allow-shlib-undefined -Wl,--as-needed -Iinclude/ -L lib -o build/v4l2ndi main.cpp PixelFormatConverter.cpp -lndi -ldl
-
-
-                  echo y | ${ndi-linux}
                   mkdir build
 
                   g++ -std=c++14 -pthread  -Wl,--allow-shlib-undefined -Wl,--as-needed \
@@ -88,17 +75,22 @@
 
                 '';
 
-                  installPhase = ''
-                    mkdir $out
-                    cp -r build $out/bin
-                  '';
+                installPhase = ''
+                  mkdir $out
+                  cp -r build $out/bin
+                '';
 
-                  meta = with pkgs.lib; {
-                    mainProgram = "v4l2ndi";
-                    platforms = platforms.linux;
-                  };
-
+                meta = with pkgs.lib; {
+                  mainProgram = "v4l2ndi";
+                  platforms = platforms.linux;
+                  homepage = "https://github.com/lplassman/V4L2-to-NDI";
+                  description = "A video input (V4L2) to NDI converter";
+                  maintainers = with pkgs; [ pinpox mayniklas ];
+                  # sourceProvenance = with sourceTypes; [ binaryNativeCode ];
+                  license = licenses.mit;
                 };
+
+              };
           });
 
 
