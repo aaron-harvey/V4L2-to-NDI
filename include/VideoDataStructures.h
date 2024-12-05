@@ -4,17 +4,16 @@
 #include <cstdint>
 #include <cstring>
 
+namespace zs
+{
 
-namespace zs {
-
-
-#define MAKE_FOURCC_CODE(a,b,c,d) ( (uint32_t) (((d)<<24) | ((c)<<16) | ((b)<<8) | (a)) )
-
+#define MAKE_FOURCC_CODE(a, b, c, d) ((uint32_t)(((d) << 24) | ((c) << 16) | ((b) << 8) | (a)))
 
 	/**
 	\brief enum of valid FOURCC codes
 	*/
-	enum class ValidFourccCodes {
+	enum class ValidFourccCodes
+	{
 
 		RGB24 = MAKE_FOURCC_CODE('R', 'G', 'B', 'R'),
 		BGR24 = MAKE_FOURCC_CODE('B', 'G', 'R', 'B'),
@@ -30,16 +29,15 @@ namespace zs {
 
 	};
 
-
 	/**
 	\brief Universal video frame class
 	*/
-	class Frame {
+	class Frame
+	{
 
 	public:
-
 		/// Pointer to data buffer
-		uint8_t* data;
+		uint8_t *data;
 		/// Frame width (pixels)
 		uint32_t width;
 		/// Frame height (pixels)
@@ -53,26 +51,30 @@ namespace zs {
 		/// ID of frame
 		uint32_t frameID;
 		/// Default constructor
-		Frame() : data(nullptr), width(0), height(0), size(0), fourcc(0), sourceID(0), frameID(0) { };
+		Frame() : data(nullptr), width(0), height(0), size(0), fourcc(0), sourceID(0), frameID(0) {};
 		/// Copy constructor
-		Frame(const Frame& src) : data(nullptr), width(0), height(0), size(0), fourcc(0), sourceID(0), frameID(0) {
+		Frame(const Frame &src) : data(nullptr), width(0), height(0), size(0), fourcc(0), sourceID(0), frameID(0)
+		{
 			this->width = src.width;
 			this->height = src.height;
 			this->fourcc = src.fourcc;
 			this->size = src.size;
 			this->sourceID = src.sourceID;
 			this->frameID = src.frameID;
-			if (this->size > 0) {
+			if (this->size > 0)
+			{
 				this->data = new uint8_t[this->size];
 				memcpy(this->data, src.data, this->size);
 			}
 		};
 		/// Class constructor
-		Frame(uint32_t width, uint32_t height, uint32_t fourcc) : data(nullptr), width(0), height(0), size(0), fourcc(0), sourceID(0), frameID(0) {
+		Frame(uint32_t width, uint32_t height, uint32_t fourcc) : data(nullptr), width(0), height(0), size(0), fourcc(0), sourceID(0), frameID(0)
+		{
 
 			if (width == 0 || height == 0)
 				return;
-			switch (fourcc) {
+			switch (fourcc)
+			{
 			case (uint32_t)ValidFourccCodes::RGB24:
 				size = width * height * 3;
 				break;
@@ -89,7 +91,8 @@ namespace zs {
 				size = width * height;
 				break;
 			case (uint32_t)ValidFourccCodes::NV12:
-				size = width * (height + height / 2);;
+				size = width * (height + height / 2);
+				;
 				break;
 			case (uint32_t)ValidFourccCodes::YUV1:
 				size = width * height * 3;
@@ -114,12 +117,13 @@ namespace zs {
 			this->fourcc = fourcc;
 			data = new uint8_t[size];
 			memset(data, 0, size);
-
 		};
 		/// Operator "="
-		Frame& operator= (const Frame& src) {
+		Frame &operator=(const Frame &src)
+		{
 
-			if (this != &src) {
+			if (this != &src)
+			{
 				delete[] data;
 				data = nullptr;
 				this->width = src.width;
@@ -128,7 +132,8 @@ namespace zs {
 				this->size = src.size;
 				this->sourceID = src.sourceID;
 				this->frameID = src.frameID;
-				if (this->size > 0) {
+				if (this->size > 0)
+				{
 					this->data = new uint8_t[this->size];
 					memcpy(this->data, src.data, this->size);
 				}
@@ -138,16 +143,15 @@ namespace zs {
 		/// Class destructor
 		~Frame() { delete[] data; };
 		/// Release method
-		void Release() {
+		void Release()
+		{
 
 			delete[] data;
 			width = 0;
 			height = 0;
 			frameID = 0;
 			size = 0;
-
 		}
-
 	};
 
 }
